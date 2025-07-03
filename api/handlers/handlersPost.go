@@ -30,3 +30,30 @@ func RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 		"message": "ok",
 	})
 }
+
+func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
+	var user models.LoginInput
+
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		http.Error(w, "Не удалось распарсить JSON", http.StatusBadRequest)
+		return
+	}
+
+	res, err := authorization.LoginUser(user.Name, user.Password)
+	if err != nil {
+		http.Error(w, "Че то с тобой не то", http.StatusBadRequest)
+		return
+	}
+
+	token, err := authorization.GenerateJWT(res)
+	if err != nil {
+		http.Error(w, "Че то с тобой не то", http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"token": token,
+	})
+
+}
