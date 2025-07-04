@@ -3,8 +3,10 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 	"private-notes/api/authorization"
 	"private-notes/internal/models"
+	"time"
 )
 
 func RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +47,9 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := authorization.GenerateJWT(res)
+	jwtMaker := authorization.NewJWTMaker(os.Getenv("JWT_SECRET"))
+
+	token, err := jwtMaker.CreateToken(res, 24*time.Hour)
 	if err != nil {
 		http.Error(w, "Че то с тобой не то", http.StatusBadRequest)
 		return
