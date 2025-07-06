@@ -8,7 +8,7 @@ import (
 )
 
 type JWTMaker struct {
-	secretKey string
+	SecretKey string
 }
 
 type Maker interface {
@@ -17,7 +17,7 @@ type Maker interface {
 }
 
 func NewJWTMaker(secret string) *JWTMaker {
-	return &JWTMaker{secretKey: secret}
+	return &JWTMaker{SecretKey: secret}
 }
 
 func (maker *JWTMaker) CreateToken(userID int, durarion time.Duration) (string, error) {
@@ -29,7 +29,7 @@ func (maker *JWTMaker) CreateToken(userID int, durarion time.Duration) (string, 
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
-	return token.SignedString([]byte(maker.secretKey))
+	return token.SignedString([]byte(maker.SecretKey))
 }
 
 func (maker *JWTMaker) VerifyToken(tokenStr string) (*models.User, error) {
@@ -37,7 +37,7 @@ func (maker *JWTMaker) VerifyToken(tokenStr string) (*models.User, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, models.ErrTypeOfSignature
 		}
-		return []byte(maker.secretKey), nil
+		return []byte(maker.SecretKey), nil
 	})
 	if err != nil {
 		return nil, err
