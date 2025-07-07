@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"private-notes/api/authorization"
+	"private-notes/internal/db"
 	"private-notes/internal/models"
 	"time"
 )
@@ -58,6 +59,34 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{
 		"token": token,
+	})
+
+}
+
+func CreateNoteHandler(w http.ResponseWriter, r *http.Request) {
+	userIDRaw := r.Context().Value("user_id")
+	userIDint, ok := userIDRaw.(int)
+	if !ok {
+		http.Error(w, "user_id не найден", http.StatusUnauthorized)
+		return
+	}
+
+	var note models.Notes
+
+	if err := json.NewDecoder(r.Body).Decode(&note); err != nil {
+		http.Error(w, "Не удалось распарсить JSON", http.StatusBadRequest)
+		return
+	}
+
+	err := db.CreateNote(userIDint, note.Content, note.ExpiresAt, note.IsPrivate)
+	if err != nil {
+		http.Error(w, "Не удалось добавить заметку", http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "success",
 	})
 
 }

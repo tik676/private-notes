@@ -8,11 +8,17 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func InitRoute() {
+func InitRoute() http.Handler {
 	r := chi.NewRouter()
 
-	r.Use(middleware.MiddlewareCheckJWT)
-	r.Get("/me", handlers.HandlerMe)
+	r.Post("/registration", handlers.RegisterUserHandler)
+	r.Post("/login", handlers.LoginUserHandler)
 
-	http.ListenAndServe(":2288", r)
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.MiddlewareCheckJWT)
+		r.Get("/me", handlers.HandlerMe)
+		r.Post("/notes", handlers.CreateNoteHandler)
+	})
+
+	return r
 }
