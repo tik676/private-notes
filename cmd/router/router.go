@@ -13,6 +13,7 @@ func InitRoute() http.Handler {
 
 	r.Post("/registration", handlers.RegisterUserHandler)
 	r.Post("/login", handlers.LoginUserHandler)
+	r.Get("/notes/public/{id}", handlers.GetPublicNoteHandler)
 
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.MiddlewareCheckJWT)

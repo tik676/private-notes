@@ -7,9 +7,17 @@ import (
 	"time"
 )
 
-var (
-	now = time.Now()
-)
+func RegularClearNoteByExpires() {
+	go func() {
+		for {
+			_, err := DB.Exec(`DELETE FROM notes WHERE expires_at < NOW()`)
+			if err != nil {
+				log.Fatal("Ошибка удаления просроченных заметок:", err)
+			}
+			time.Sleep(1 * time.Minute)
+		}
+	}()
+}
 
 func GetWithIDNotesMe(userID int) ([]models.Notes, error) {
 	query := `SELECT * FROM notes WHERE user_id=$1`
@@ -38,6 +46,16 @@ func GetWithIDNotesMe(userID int) ([]models.Notes, error) {
 	}
 	return userNotes, nil
 
+}
+
+func GetPublicNote(id int) (*models.Notes, error) {
+	var note models.Notes
+	query := `SELECT * FROM notes WHERE id=$1 AND is_private = false`
+	err := DB.QueryRow(query, id).Scan(&note.ID, &note.UserID, &note.Content, &note.CreatedAt, &note.ExpiresAt, &note.IsPrivate)
+	if err != nil {
+		return nil, err
+	}
+	return &note, nil
 }
 
 func CreateNote(user_id int, content string, duration time.Time, isPrivate bool) error {
