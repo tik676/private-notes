@@ -98,7 +98,7 @@ func GetUserIDByRefreshToken(token string) (int, error) {
 }
 
 func DeleteRefreshToken(token string) error {
-	query := `DELETE * FROM refresh_tokens WHERE token=$1`
+	query := `DELETE FROM refresh_tokens WHERE token=$1`
 	_, err := DB.Exec(query, token)
 	if err != nil {
 		return errors.New("refresh token ne prishel kaput")
