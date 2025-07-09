@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 	"private-notes/internal/models"
 	"time"
@@ -13,6 +14,10 @@ func RegularClearNoteByExpires() {
 			_, err := DB.Exec(`DELETE FROM notes WHERE expires_at < NOW()`)
 			if err != nil {
 				log.Fatal("Ошибка удаления просроченных заметок:", err)
+			}
+			_, err = DB.Exec(`DELETE FROM refresh_tokens WHERE expires_at < NOW()`)
+			if err != nil {
+				log.Fatal("Ошибка удаления просроченных refresh токенов:", err)
 			}
 			time.Sleep(1 * time.Minute)
 		}
@@ -65,4 +70,38 @@ func CreateNote(user_id int, content string, duration time.Time, isPrivate bool)
 		return models.ErrToAddNote
 	}
 	return nil
+}
+
+func SaveRefreshToken(userID int, refreshToken string, refreshExp time.Time) error {
+	_, err := DB.Exec(`INSERT INTO refresh_tokens(user_id, token, expires_at)VALUES($1, $2, $3);`, userID, refreshToken, refreshExp)
+	return err
+}
+
+func GetUserIDByRefreshToken(token string) (int, error) {
+	var userID int
+	var expiresAt time.Time
+
+	query := `SELECT user_id, expires_at FROM refresh_tokens WHERE token = $1`
+	err := DB.QueryRow(query, token).Scan(&userID, &expiresAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, errors.New("refresh token not found")
+		}
+		return 0, err
+	}
+
+	if time.Now().After(expiresAt) {
+		return 0, errors.New("refresh token expired")
+	}
+
+	return userID, nil
+}
+
+func DeleteRefreshToken(token string) error {
+	query := `DELETE * FROM refresh_tokens WHERE token=$1`
+	_, err := DB.Exec(query, token)
+	if err != nil {
+		return errors.New("refresh token ne prishel kaput")
+	}
+	return err
 }

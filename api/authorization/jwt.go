@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 type JWTMaker struct {
@@ -49,6 +50,12 @@ func (maker *JWTMaker) VerifyToken(tokenStr string) (*models.User, error) {
 	}
 
 	return &models.User{ID: claims.UserID}, nil
+}
+
+func GenerateRefresh() (string, time.Time, error) {
+	token := uuid.New().String()
+	expires_at := time.Now().Add(7 * 24 * time.Hour)
+	return token, expires_at, nil
 }
 
 /*func GenerateJWT(userID int) (string, error) {

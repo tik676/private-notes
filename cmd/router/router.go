@@ -13,6 +13,9 @@ func InitRoute() http.Handler {
 
 	r.Post("/registration", handlers.RegisterUserHandler)
 	r.Post("/login", handlers.LoginUserHandler)
+	r.Post("/refresh-token", handlers.RefreshTokenHandle)
+	r.Post("/logout", handlers.LogoutHandler)
+
 	r.Get("/notes/public/{id}", handlers.GetPublicNoteHandler)
 
 	r.Group(func(r chi.Router) {
