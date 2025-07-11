@@ -63,20 +63,6 @@ func GetPublicNote(id int) (*models.Notes, error) {
 	return &note, nil
 }
 
-func CreateNote(user_id int, content string, duration time.Time, isPrivate bool) error {
-	query := `INSERT INTO notes(user_id,content,expires_at,is_private)VALUES($1, $2, $3,$4);`
-	_, err := DB.Exec(query, user_id, content, duration, isPrivate)
-	if err != nil {
-		return models.ErrToAddNote
-	}
-	return nil
-}
-
-func SaveRefreshToken(userID int, refreshToken string, refreshExp time.Time) error {
-	_, err := DB.Exec(`INSERT INTO refresh_tokens(user_id, token, expires_at)VALUES($1, $2, $3);`, userID, refreshToken, refreshExp)
-	return err
-}
-
 func GetUserIDByRefreshToken(token string) (int, error) {
 	var userID int
 	var expiresAt time.Time
@@ -97,6 +83,30 @@ func GetUserIDByRefreshToken(token string) (int, error) {
 	return userID, nil
 }
 
+func GetNoteByIDAndUser(noteID, userID int) (*models.Notes, error) {
+	var note models.Notes
+	query := `SELECT * FROM notes WHERE id=$1 AND user_id=$2`
+	err := DB.QueryRow(query, noteID, userID).Scan(&note.ID, &note.UserID, &note.Content, &note.CreatedAt, &note.ExpiresAt, &note.IsPrivate)
+	if err != nil {
+		return nil, errors.New("Нету такой заметки")
+	}
+	return &note, nil
+}
+
+func CreateNote(user_id int, content string, duration time.Time, isPrivate bool) error {
+	query := `INSERT INTO notes(user_id,content,expires_at,is_private)VALUES($1, $2, $3,$4);`
+	_, err := DB.Exec(query, user_id, content, duration, isPrivate)
+	if err != nil {
+		return models.ErrToAddNote
+	}
+	return nil
+}
+
+func SaveRefreshToken(userID int, refreshToken string, refreshExp time.Time) error {
+	_, err := DB.Exec(`INSERT INTO refresh_tokens(user_id, token, expires_at)VALUES($1, $2, $3);`, userID, refreshToken, refreshExp)
+	return err
+}
+
 func DeleteRefreshToken(token string) error {
 	query := `DELETE FROM refresh_tokens WHERE token=$1`
 	_, err := DB.Exec(query, token)
@@ -104,4 +114,28 @@ func DeleteRefreshToken(token string) error {
 		return errors.New("refresh token ne prishel kaput")
 	}
 	return err
+}
+
+func DeleteNote(noteID, userID int) error {
+	query := `DELETE FROM notes WHERE id=$1 AND user_id=$2`
+	_, err := DB.Exec(query, noteID, userID)
+	if err != nil {
+		return errors.New("Не получилось удалить заметку")
+	}
+	return err
+}
+
+func UpdateNote(noteID, userID int, content string, expires_at time.Time, is_private bool) error {
+	query := `
+	UPDATE notes 
+	SET content=$1 , expires_at=$2 , is_private=$3
+	WHERE id=$4 AND user_id=$5
+	`
+
+	_, err := DB.Exec(query, content, expires_at, is_private, noteID, userID)
+	if err != nil {
+		return errors.New("Не получилось изменить заметку")
+	}
+	return err
+
 }

@@ -20,8 +20,14 @@ func InitRoute() http.Handler {
 
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.MiddlewareCheckJWT)
+
 		r.Get("/me", handlers.HandlerMe)
+
 		r.Post("/notes", handlers.CreateNoteHandler)
+
+		r.Patch("/notes/{id}", handlers.UpdateNoteHandler)
+
+		r.Delete("/notes/{id}", handlers.DeleteNoteHandler)
 	})
 
 	return r

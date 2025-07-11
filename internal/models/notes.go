@@ -10,3 +10,9 @@ type Notes struct {
 	ExpiresAt time.Time `json:"expires_at"`
 	IsPrivate bool      `json:"is_private"`
 }
+
+type UpdateNote struct {
+	Content   *string    `json:"content"`
+	ExpiresAt *time.Time `json:"expires_at"`
+	IsPrivate *bool      `json:"is_private"`
+}
