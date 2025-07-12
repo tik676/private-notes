@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"private-notes/api/authorization"
 	"private-notes/internal/db"
 	"private-notes/internal/models"
 	"strconv"
@@ -11,45 +12,68 @@ import (
 )
 
 func UpdateNoteHandler(w http.ResponseWriter, r *http.Request) {
-	var note models.UpdateNote
-	strNoteID := chi.URLParam(r, "id")
-	noteID, err := strconv.Atoi(strNoteID)
+	var input models.UpdateNote
+
+	noteID, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		http.Error(w, "Хз какую ошибку вернуть посоветуй", http.StatusUnauthorized)
+		http.Error(w, "Некорректный ID", http.StatusBadRequest)
 		return
 	}
 
-	userRAWID := r.Context().Value("user_id")
-	userID, ok := userRAWID.(int)
+	userRawID := r.Context().Value("user_id")
+	userID, ok := userRawID.(int)
 	if !ok {
 		http.Error(w, "user_id не найден", http.StatusUnauthorized)
 		return
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&note); err != nil {
-		http.Error(w, "Не удалось распарсить JSON", http.StatusBadRequest)
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Ошибка парсинга JSON", http.StatusBadRequest)
 		return
 	}
 
-	noteSource, err := db.GetNoteByIDAndUser(noteID, userID)
+	note, err := db.GetNoteByIDAndUser(noteID, userID)
 	if err != nil {
 		http.Error(w, "Заметка не найдена", http.StatusNotFound)
 		return
 	}
 
-	if note.Content != nil {
-		noteSource.Content = *note.Content
+	if input.Content != nil {
+		note.Content = *input.Content
 	}
-	if note.ExpiresAt != nil {
-		noteSource.ExpiresAt = *note.ExpiresAt
+	if input.ExpiresAt != nil {
+		note.ExpiresAt = *input.ExpiresAt
 	}
-	if note.IsPrivate != nil {
-		noteSource.IsPrivate = *note.IsPrivate
+	if input.IsPrivate != nil {
+		note.IsPrivate = *input.IsPrivate
 	}
 
-	err = db.UpdateNote(noteID, userID, noteSource.Content, noteSource.ExpiresAt, noteSource.IsPrivate)
+	var hashPass *string
+
+	if note.IsPrivate {
+		if input.Password == nil {
+			// если приватная, но пароль не передан — сохраняем старый (если есть)
+			hashPass = note.HashPassword
+		} else {
+			if *input.Password == "" {
+				http.Error(w, "Пароль не может быть пустым", http.StatusBadRequest)
+				return
+			}
+			h, err := authorization.GenerateHash(*input.Password)
+			if err != nil {
+				http.Error(w, "Ошибка хеширования пароля", http.StatusInternalServerError)
+				return
+			}
+			hashPass = &h
+		}
+	} else {
+		// если заметка становится публичной — убираем пароль
+		hashPass = nil
+	}
+
+	err = db.UpdateNote(noteID, userID, note.Content, note.ExpiresAt, note.IsPrivate, hashPass)
 	if err != nil {
-		http.Error(w, "Не удалось обновить заметку", http.StatusBadRequest)
+		http.Error(w, "Не удалось обновить заметку", http.StatusInternalServerError)
 		return
 	}
 

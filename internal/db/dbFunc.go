@@ -39,7 +39,7 @@ func GetWithIDNotesMe(userID int) ([]models.Notes, error) {
 	for res.Next() {
 		var note models.Notes
 
-		if err := res.Scan(&note.ID, &note.UserID, &note.Content, &note.CreatedAt, &note.ExpiresAt, &note.IsPrivate); err != nil {
+		if err := res.Scan(&note.ID, &note.UserID, &note.Content, &note.CreatedAt, &note.ExpiresAt, &note.IsPrivate, &note.HashPassword); err != nil {
 			if err == sql.ErrNoRows {
 				log.Println("ошибка сканирования заметки:", err)
 				return nil, models.ErrUserNotFound
@@ -86,16 +86,16 @@ func GetUserIDByRefreshToken(token string) (int, error) {
 func GetNoteByIDAndUser(noteID, userID int) (*models.Notes, error) {
 	var note models.Notes
 	query := `SELECT * FROM notes WHERE id=$1 AND user_id=$2`
-	err := DB.QueryRow(query, noteID, userID).Scan(&note.ID, &note.UserID, &note.Content, &note.CreatedAt, &note.ExpiresAt, &note.IsPrivate)
+	err := DB.QueryRow(query, noteID, userID).Scan(&note.ID, &note.UserID, &note.Content, &note.CreatedAt, &note.ExpiresAt, &note.IsPrivate, &note.HashPassword)
 	if err != nil {
 		return nil, errors.New("Нету такой заметки")
 	}
 	return &note, nil
 }
 
-func CreateNote(user_id int, content string, duration time.Time, isPrivate bool) error {
-	query := `INSERT INTO notes(user_id,content,expires_at,is_private)VALUES($1, $2, $3,$4);`
-	_, err := DB.Exec(query, user_id, content, duration, isPrivate)
+func CreateNote(user_id int, content string, duration time.Time, isPrivate bool, hash_Password *string) error {
+	query := `INSERT INTO notes(user_id,content,expires_at,is_private,hash_password)VALUES($1, $2, $3, $4, $5);`
+	_, err := DB.Exec(query, user_id, content, duration, isPrivate, hash_Password)
 	if err != nil {
 		return models.ErrToAddNote
 	}
@@ -125,17 +125,15 @@ func DeleteNote(noteID, userID int) error {
 	return err
 }
 
-func UpdateNote(noteID, userID int, content string, expires_at time.Time, is_private bool) error {
+func UpdateNote(noteID, userID int, content string, expiresAt time.Time, isPrivate bool, hashPassword *string) error {
 	query := `
-	UPDATE notes 
-	SET content=$1 , expires_at=$2 , is_private=$3
-	WHERE id=$4 AND user_id=$5
+		UPDATE notes 
+		SET content=$1, expires_at=$2, is_private=$3, hash_password=$4
+		WHERE id=$5 AND user_id=$6
 	`
-
-	_, err := DB.Exec(query, content, expires_at, is_private, noteID, userID)
+	_, err := DB.Exec(query, content, expiresAt, isPrivate, hashPassword, noteID, userID)
 	if err != nil {
 		return errors.New("Не получилось изменить заметку")
 	}
-	return err
-
+	return nil
 }

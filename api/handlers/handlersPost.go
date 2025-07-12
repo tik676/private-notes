@@ -7,6 +7,7 @@ import (
 	"private-notes/api/authorization"
 	"private-notes/internal/db"
 	"private-notes/internal/models"
+	"strings"
 	"time"
 )
 
@@ -83,14 +84,33 @@ func CreateNoteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var note models.Notes
-
+	var note models.NoteInput
 	if err := json.NewDecoder(r.Body).Decode(&note); err != nil {
 		http.Error(w, "Не удалось распарсить JSON", http.StatusBadRequest)
 		return
 	}
 
-	err := db.CreateNote(userIDint, note.Content, note.ExpiresAt, note.IsPrivate)
+	var hashPass *string
+
+	if note.IsPrivate {
+		if note.Password == nil || strings.TrimSpace(*note.Password) == "" {
+			http.Error(w, "Приватной заметке нужен пароль", http.StatusBadRequest)
+			return
+		}
+		h, err := authorization.GenerateHash(*note.Password)
+		if err != nil {
+			http.Error(w, "Не удалось хешировать пароль", http.StatusBadRequest)
+			return
+		}
+		hashPass = &h
+	} else {
+		if note.Password != nil {
+			http.Error(w, "Публичной заметке не нужен пароль", http.StatusBadRequest)
+			return
+		}
+	}
+
+	err := db.CreateNote(userIDint, note.Content, note.ExpiresAt, note.IsPrivate, hashPass)
 	if err != nil {
 		http.Error(w, "Не удалось добавить заметку", http.StatusBadRequest)
 		return
@@ -115,7 +135,7 @@ func RefreshTokenHandle(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := db.GetUserIDByRefreshToken(req.RefreshToken)
 	if err != nil {
-		http.Error(w, "Невалидный refresh token", http.StatusUnauthorized)
+		http.Error(w, "Срок действия токена истёк или он не существует", http.StatusUnauthorized)
 		return
 	}
 

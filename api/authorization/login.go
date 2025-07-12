@@ -18,7 +18,7 @@ func LoginUser(name, password string) (int, error) {
 		if err == sql.ErrNoRows {
 			return 0, errors.New("пользователь не найден")
 		}
-		return 0, nil
+		return 0, err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
