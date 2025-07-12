@@ -1,0 +1,48 @@
+:root {
+  --bg-color: #f8f9fa;
+  --text-color: #212529;
+  --card-bg: #ffffff;
+  --header-bg: #343a40;
+  --header-text: white;
+  --button-bg: #007bff;
+  --button-hover: #0056b3;
+}
+
+[data-theme="dark"] {
+  --bg-color: #1e1e1e;
+  --text-color: #e2e2e2;
+  --card-bg: #2c2c2c;
+  --header-bg: #111;
+  --header-text: #eee;
+  --button-bg: #444;
+  --button-hover: #666;
+}
+
+@keyframes moveLines {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 100%;
+  }
+}
+
+.animated-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(
+    to bottom,
+    var(--line-color) 2px,
+    transparent 2px
+  );
+  background-size: 100% 40px;
+  animation: moveLines 12s linear infinite;
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: 0;
+}
+
+

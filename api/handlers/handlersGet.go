@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"private-notes/internal/db"
+	"private-notes/internal/models"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
@@ -23,6 +24,10 @@ func HandlerMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if notes == nil {
+		notes = []models.Notes{}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(notes)
 
@@ -39,7 +44,7 @@ func GetPublicNoteHandler(w http.ResponseWriter, r *http.Request) {
 
 	note, err := db.GetPublicNote(noteID)
 	if err != nil {
-		http.Error(w, "хз какую ошибку вернуть посоветуй", http.StatusBadRequest)
+		http.Error(w, "Заметка не найдена или не публичная", http.StatusBadRequest)
 		return
 	}
 

@@ -52,7 +52,6 @@ func UpdateNoteHandler(w http.ResponseWriter, r *http.Request) {
 
 	if note.IsPrivate {
 		if input.Password == nil {
-			// если приватная, но пароль не передан — сохраняем старый (если есть)
 			hashPass = note.HashPassword
 		} else {
 			if *input.Password == "" {
@@ -67,7 +66,6 @@ func UpdateNoteHandler(w http.ResponseWriter, r *http.Request) {
 			hashPass = &h
 		}
 	} else {
-		// если заметка становится публичной — убираем пароль
 		hashPass = nil
 	}
 

@@ -56,7 +56,7 @@ func GetWithIDNotesMe(userID int) ([]models.Notes, error) {
 func GetPublicNote(id int) (*models.Notes, error) {
 	var note models.Notes
 	query := `SELECT * FROM notes WHERE id=$1 AND is_private = false`
-	err := DB.QueryRow(query, id).Scan(&note.ID, &note.UserID, &note.Content, &note.CreatedAt, &note.ExpiresAt, &note.IsPrivate)
+	err := DB.QueryRow(query, id).Scan(&note.ID, &note.UserID, &note.Content, &note.CreatedAt, &note.ExpiresAt, &note.IsPrivate, &note.HashPassword)
 	if err != nil {
 		return nil, err
 	}

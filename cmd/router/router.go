@@ -11,7 +11,9 @@ import (
 func InitRoute() http.Handler {
 	r := chi.NewRouter()
 
-	r.Post("/registration", handlers.RegisterUserHandler)
+	r.Use(middleware.CORSMiddleware)
+
+	r.Post("/register", handlers.RegisterUserHandler)
 	r.Post("/login", handlers.LoginUserHandler)
 	r.Post("/refresh-token", handlers.RefreshTokenHandle)
 	r.Post("/logout", handlers.LogoutHandler)
