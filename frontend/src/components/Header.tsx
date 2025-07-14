@@ -20,7 +20,7 @@ export default function Header() {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user");
-    navigate("/login");
+    navigate("/");
   };
 
   return (

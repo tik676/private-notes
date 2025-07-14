@@ -63,6 +63,17 @@ func GetPublicNote(id int) (*models.Notes, error) {
 	return &note, nil
 }
 
+func GetNoteByID(noteID int) (*models.Notes, error) {
+	var note models.Notes
+	query := `SELECT * FROM notes WHERE id=$1`
+	err := DB.QueryRow(query, noteID).Scan(&note.ID, &note.UserID, &note.Content, &note.CreatedAt, &note.ExpiresAt, &note.IsPrivate, &note.HashPassword)
+	if err != nil {
+		return nil, errors.New("Заметки с таким id не существует")
+	}
+
+	return &note, nil
+}
+
 func GetUserIDByRefreshToken(token string) (int, error) {
 	var userID int
 	var expiresAt time.Time
@@ -90,6 +101,7 @@ func GetNoteByIDAndUser(noteID, userID int) (*models.Notes, error) {
 	if err != nil {
 		return nil, errors.New("Нету такой заметки")
 	}
+
 	return &note, nil
 }
 

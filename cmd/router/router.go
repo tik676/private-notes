@@ -17,17 +17,21 @@ func InitRoute() http.Handler {
 	r.Post("/login", handlers.LoginUserHandler)
 	r.Post("/refresh-token", handlers.RefreshTokenHandle)
 	r.Post("/logout", handlers.LogoutHandler)
+	r.Post("/notes/{id}/unlock", handlers.UnlockPrivateNoteHandler)
 
 	r.Get("/notes/public/{id}", handlers.GetPublicNoteHandler)
+	r.Get("/notes/{id}/check-private", handlers.CheckPrivateNoteHandler)
+	r.Get("/notes/{id}/check", handlers.CheckNoteHandler)
 
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.MiddlewareCheckJWT)
 
 		r.Get("/me", handlers.HandlerMe)
+		r.Get("/notes/{id}", handlers.GetNoteByIDAndUserHandler)
 
 		r.Post("/notes", handlers.CreateNoteHandler)
 
-		r.Patch("/notes/{id}", handlers.UpdateNoteHandler)
+		r.Put("/notes/{id}", handlers.UpdateNoteHandler)
 
 		r.Delete("/notes/{id}", handlers.DeleteNoteHandler)
 	})

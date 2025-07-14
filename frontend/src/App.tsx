@@ -8,6 +8,8 @@ import PublicNote from "./pages/PublicNote";
 import NoteEdit from "./pages/NoteEdit";
 import Welcome from "./pages/Welcome";
 import Dashboard from "./pages/Dashboard";
+import UnlockNote from "./pages/UnlockNote";
+import EnterUnlockID from "./pages/EnterUnlockID";
 
 import "./index.css";
 import "./App.css";
@@ -33,6 +35,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/create" element={<CreateNote />} />
         <Route path="/note/:id" element={<PublicNote />} />
+        <Route path="/note/:id/unlock" element={<UnlockNote />} />
+       <Route path="/unlock-id" element={<EnterUnlockID />} />
         <Route path="/edit/:id" element={<NoteEdit />} />
       </Routes>
     </div>

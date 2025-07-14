@@ -7,8 +7,12 @@ import (
 	"private-notes/api/authorization"
 	"private-notes/internal/db"
 	"private-notes/internal/models"
+	"strconv"
 	"strings"
 	"time"
+
+	"github.com/go-chi/chi/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -165,6 +169,49 @@ func RefreshTokenHandle(w http.ResponseWriter, r *http.Request) {
 		"access_token":  token,
 		"refresh_token": newRefresh,
 	})
+}
+
+func UnlockPrivateNoteHandler(w http.ResponseWriter, r *http.Request) {
+	type reqS struct {
+		Password string `json:"password"`
+	}
+
+	var req reqS
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Не удалось распарсить JSON", http.StatusBadRequest)
+		return
+	}
+
+	noteIDRAW := chi.URLParam(r, "id")
+	noteID, err := strconv.Atoi(noteIDRAW)
+	if err != nil {
+		http.Error(w, "Некорректный ID", http.StatusBadRequest)
+		return
+	}
+
+	note, err := db.GetNoteByID(noteID)
+	if err != nil {
+		http.Error(w, "Заметка не найдена или неверный пароль", http.StatusBadRequest)
+		return
+	}
+
+	if !note.IsPrivate {
+		http.Error(w, "Эта заметка не является приватной", http.StatusBadRequest)
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(*note.HashPassword), []byte(req.Password))
+	if err != nil {
+		http.Error(w, "Пароль неверный", http.StatusUnauthorized)
+		return
+	}
+
+	note.HashPassword = nil
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(note)
+
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
