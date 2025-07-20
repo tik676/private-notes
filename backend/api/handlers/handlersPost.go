@@ -57,7 +57,7 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	token, err := jwtMaker.CreateToken(userID, 15*time.Minute)
 	if err != nil {
-		http.Error(w, "Че то с тобой не то", http.StatusBadRequest)
+		http.Error(w, "Че то с тобой не ты", http.StatusBadRequest)
 		return
 	}
 

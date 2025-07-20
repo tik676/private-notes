@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"private-notes/internal/models"
+
 	"time"
 )
 
@@ -55,9 +56,22 @@ func GetWithIDNotesMe(userID int) ([]models.Notes, error) {
 
 func GetPublicNote(id int) (*models.Notes, error) {
 	var note models.Notes
-	query := `SELECT * FROM notes WHERE id=$1 AND is_private = false`
-	err := DB.QueryRow(query, id).Scan(&note.ID, &note.UserID, &note.Content, &note.CreatedAt, &note.ExpiresAt, &note.IsPrivate, &note.HashPassword)
+	query := `
+  		SELECT id, user_id, content, created_at, expires_at, is_private, hash_password
+  		FROM notes WHERE id=$1 AND is_private = false
+	`
+	err := DB.QueryRow(query, id).Scan(
+		&note.ID,
+		&note.UserID,
+		&note.Content,
+		&note.CreatedAt,
+		&note.ExpiresAt,
+		&note.IsPrivate,
+		&note.HashPassword,
+	)
+
 	if err != nil {
+		log.Println("GetPublicNote error:", err)
 		return nil, err
 	}
 	return &note, nil
