@@ -6,7 +6,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "2288:2288"
+      - "2288:8080"
     env_file:
       - ./backend/.env
 

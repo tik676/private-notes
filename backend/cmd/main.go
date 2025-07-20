@@ -15,7 +15,7 @@ func main() {
 
 	log.Println("🔥 Сервер запускается на порту :2288")
 
-	err := http.ListenAndServe(":2288", r)
+	err := http.ListenAndServe(":8080", r)
 	if err != nil {
 		log.Fatalf("Ошибка запуска сервера: %v", err)
 		return
