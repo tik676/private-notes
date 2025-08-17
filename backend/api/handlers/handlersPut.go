@@ -16,25 +16,25 @@ func UpdateNoteHandler(w http.ResponseWriter, r *http.Request) {
 
 	noteID, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		http.Error(w, "Некорректный ID", http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	userRawID := r.Context().Value("user_id")
 	userID, ok := userRawID.(int)
 	if !ok {
-		http.Error(w, "user_id не найден", http.StatusUnauthorized)
+		http.Error(w, "user_id not found", http.StatusUnauthorized)
 		return
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		http.Error(w, "Ошибка парсинга JSON", http.StatusBadRequest)
+		http.Error(w, "Failed to parse JSON", http.StatusBadRequest)
 		return
 	}
 
 	note, err := db.GetNoteByIDAndUser(noteID, userID)
 	if err != nil {
-		http.Error(w, "Заметка не найдена", http.StatusNotFound)
+		http.Error(w, "Note not found", http.StatusNotFound)
 		return
 	}
 
@@ -55,12 +55,12 @@ func UpdateNoteHandler(w http.ResponseWriter, r *http.Request) {
 			hashPass = note.HashPassword
 		} else {
 			if *input.Password == "" {
-				http.Error(w, "Пароль не может быть пустым", http.StatusBadRequest)
+				http.Error(w, "Password cannot be empty", http.StatusBadRequest)
 				return
 			}
 			h, err := authorization.GenerateHash(*input.Password)
 			if err != nil {
-				http.Error(w, "Ошибка хеширования пароля", http.StatusInternalServerError)
+				http.Error(w, "Failed to hash password", http.StatusInternalServerError)
 				return
 			}
 			hashPass = &h
@@ -71,7 +71,7 @@ func UpdateNoteHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = db.UpdateNote(noteID, userID, note.Content, note.ExpiresAt, note.IsPrivate, hashPass)
 	if err != nil {
-		http.Error(w, "Не удалось обновить заметку", http.StatusInternalServerError)
+		http.Error(w, "Failed to update note", http.StatusInternalServerError)
 		return
 	}
 

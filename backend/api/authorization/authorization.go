@@ -14,7 +14,7 @@ func RegisterUser(name, password string) error {
 	query := `INSERT INTO users(name,password_hash)VALUES ($1, $2)`
 	_, err = db.DB.Exec(query, name, PasswordHash)
 	if err != nil {
-		log.Println("❌ Ошибка при создании пользователя:", err)
+		log.Printf("Failed to register user:%v\n", err)
 		return err
 	}
 

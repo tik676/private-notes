@@ -13,12 +13,11 @@ func main() {
 	r := router.InitRoute()
 	go db.RegularClearNoteByExpires()
 
-	log.Println("🔥 Сервер запускается на порту :2288")
+	log.Println("Server is starting on port :2288")
 
 	err := http.ListenAndServe(":8080", r)
 	if err != nil {
-		log.Fatalf("Ошибка запуска сервера: %v", err)
+		log.Fatalf("Server startup error: %v", err)
 		return
 	}
-
 }

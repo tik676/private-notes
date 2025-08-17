@@ -19,17 +19,17 @@ func RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 	var regUser models.RegisterInput
 
 	if err := json.NewDecoder(r.Body).Decode(&regUser); err != nil {
-		http.Error(w, "Не удалось распарсить JSON", http.StatusBadRequest)
+		http.Error(w, "Failed to parse JSON", http.StatusBadRequest)
 		return
 	}
 
 	if regUser.Name == "" || regUser.Password == "" {
-		http.Error(w, "Имя и пароль обязательны", http.StatusBadRequest)
+		http.Error(w, "Name and password are required", http.StatusBadRequest)
 		return
 	}
 
 	if err := authorization.RegisterUser(regUser.Name, regUser.Password); err != nil {
-		http.Error(w, "Не удалось зарегестрировать пользователя", http.StatusBadRequest)
+		http.Error(w, "Failed to register user", http.StatusBadRequest)
 		return
 	}
 
@@ -43,13 +43,13 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	var user models.LoginInput
 
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		http.Error(w, "Не удалось распарсить JSON", http.StatusBadRequest)
+		http.Error(w, "Failed to parse JSON", http.StatusBadRequest)
 		return
 	}
 
 	userID, err := authorization.LoginUser(user.Name, user.Password)
 	if err != nil {
-		http.Error(w, "Че то с тобой не то", http.StatusBadRequest)
+		http.Error(w, "Something is wrong with you", http.StatusBadRequest)
 		return
 	}
 
@@ -57,18 +57,18 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	token, err := jwtMaker.CreateToken(userID, 15*time.Minute)
 	if err != nil {
-		http.Error(w, "Че то с тобой не ты", http.StatusBadRequest)
+		http.Error(w, "Something’s not you", http.StatusBadRequest)
 		return
 	}
 
 	refreshToken, refreshExp, err := authorization.GenerateRefresh()
 	if err != nil {
-		http.Error(w, "Не удалось создать refresh token", http.StatusInternalServerError)
+		http.Error(w, "Failed to create refresh token", http.StatusInternalServerError)
 		return
 	}
 
 	if err := db.SaveRefreshToken(userID, refreshToken, refreshExp); err != nil {
-		http.Error(w, "Не удалось сохранить refresh token", http.StatusInternalServerError)
+		http.Error(w, "Failed to save refresh token", http.StatusInternalServerError)
 		return
 	}
 
@@ -81,20 +81,19 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 			"name": user.Name,
 		},
 	})
-
 }
 
 func CreateNoteHandler(w http.ResponseWriter, r *http.Request) {
 	userIDRaw := r.Context().Value("user_id")
 	userIDint, ok := userIDRaw.(int)
 	if !ok {
-		http.Error(w, "user_id не найден", http.StatusUnauthorized)
+		http.Error(w, "user_id not found", http.StatusUnauthorized)
 		return
 	}
 
 	var note models.NoteInput
 	if err := json.NewDecoder(r.Body).Decode(&note); err != nil {
-		http.Error(w, "Не удалось распарсить JSON", http.StatusBadRequest)
+		http.Error(w, "Failed to parse JSON", http.StatusBadRequest)
 		return
 	}
 
@@ -102,25 +101,25 @@ func CreateNoteHandler(w http.ResponseWriter, r *http.Request) {
 
 	if note.IsPrivate {
 		if note.Password == nil || strings.TrimSpace(*note.Password) == "" {
-			http.Error(w, "Приватной заметке нужен пароль", http.StatusBadRequest)
+			http.Error(w, "Private note requires a password", http.StatusBadRequest)
 			return
 		}
 		h, err := authorization.GenerateHash(*note.Password)
 		if err != nil {
-			http.Error(w, "Не удалось хешировать пароль", http.StatusBadRequest)
+			http.Error(w, "Failed to hash password", http.StatusBadRequest)
 			return
 		}
 		hashPass = &h
 	} else {
 		if note.Password != nil {
-			http.Error(w, "Публичной заметке не нужен пароль", http.StatusBadRequest)
+			http.Error(w, "Public note should not have a password", http.StatusBadRequest)
 			return
 		}
 	}
 
 	err := db.CreateNote(userIDint, note.Content, note.ExpiresAt, note.IsPrivate, hashPass)
 	if err != nil {
-		http.Error(w, "Не удалось добавить заметку", http.StatusBadRequest)
+		http.Error(w, "Failed to add note", http.StatusBadRequest)
 		return
 	}
 
@@ -128,7 +127,6 @@ func CreateNoteHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{
 		"message": "success",
 	})
-
 }
 
 func RefreshTokenHandle(w http.ResponseWriter, r *http.Request) {
@@ -137,13 +135,13 @@ func RefreshTokenHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Не удалось распарсить JSON", http.StatusBadRequest)
+		http.Error(w, "Failed to parse JSON", http.StatusBadRequest)
 		return
 	}
 
 	userID, err := db.GetUserIDByRefreshToken(req.RefreshToken)
 	if err != nil {
-		http.Error(w, "Срок действия токена истёк или он не существует", http.StatusUnauthorized)
+		http.Error(w, "Refresh token expired or does not exist", http.StatusUnauthorized)
 		return
 	}
 
@@ -151,17 +149,17 @@ func RefreshTokenHandle(w http.ResponseWriter, r *http.Request) {
 
 	token, err := jwtMaker.CreateToken(userID, 15*time.Minute)
 	if err != nil {
-		http.Error(w, "Ошибка генерации access token", http.StatusInternalServerError)
+		http.Error(w, "Failed to generate access token", http.StatusInternalServerError)
 		return
 	}
 
 	newRefresh, refreshExp, err := authorization.GenerateRefresh()
 	if err != nil {
-		http.Error(w, "Ошибка генерации refresh token", http.StatusInternalServerError)
+		http.Error(w, "Failed to generate refresh token", http.StatusInternalServerError)
 		return
 	}
 	if err := db.SaveRefreshToken(userID, newRefresh, refreshExp); err != nil {
-		http.Error(w, "Ошибка сохранения refresh token", http.StatusInternalServerError)
+		http.Error(w, "Failed to save refresh token", http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -179,31 +177,31 @@ func UnlockPrivateNoteHandler(w http.ResponseWriter, r *http.Request) {
 	var req reqS
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Не удалось распарсить JSON", http.StatusBadRequest)
+		http.Error(w, "Failed to parse JSON", http.StatusBadRequest)
 		return
 	}
 
 	noteIDRAW := chi.URLParam(r, "id")
 	noteID, err := strconv.Atoi(noteIDRAW)
 	if err != nil {
-		http.Error(w, "Некорректный ID", http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	note, err := db.GetNoteByID(noteID)
 	if err != nil {
-		http.Error(w, "Заметка не найдена или неверный пароль", http.StatusBadRequest)
+		http.Error(w, "Note not found or incorrect password", http.StatusBadRequest)
 		return
 	}
 
 	if !note.IsPrivate {
-		http.Error(w, "Эта заметка не является приватной", http.StatusBadRequest)
+		http.Error(w, "This note is not private", http.StatusBadRequest)
 		return
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(*note.HashPassword), []byte(req.Password))
 	if err != nil {
-		http.Error(w, "Пароль неверный", http.StatusUnauthorized)
+		http.Error(w, "Incorrect password", http.StatusUnauthorized)
 		return
 	}
 
@@ -211,7 +209,6 @@ func UnlockPrivateNoteHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(note)
-
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
@@ -220,12 +217,12 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Не удалось распарсить JSON", http.StatusBadRequest)
+		http.Error(w, "Failed to parse JSON", http.StatusBadRequest)
 		return
 	}
 
 	if err := db.DeleteRefreshToken(req.RefreshToken); err != nil {
-		http.Error(w, "Не удалось удалить refresh token", http.StatusBadRequest)
+		http.Error(w, "Failed to delete refresh token", http.StatusBadRequest)
 		return
 	}
 
@@ -233,5 +230,4 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{
 		"message": "logout successful",
 	})
-
 }

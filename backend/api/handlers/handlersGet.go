@@ -14,13 +14,13 @@ func HandlerMe(w http.ResponseWriter, r *http.Request) {
 	userIDRaw := r.Context().Value("user_id")
 	userID, ok := userIDRaw.(int)
 	if !ok {
-		http.Error(w, "user_id не найден", http.StatusUnauthorized)
+		http.Error(w, "user_id not found", http.StatusUnauthorized)
 		return
 	}
 
 	notes, err := db.GetWithIDNotesMe(userID)
 	if err != nil {
-		http.Error(w, "хз какую ошибку вернуть посоветуй", http.StatusBadRequest)
+		http.Error(w, "Failed to get notes", http.StatusBadRequest)
 		return
 	}
 
@@ -30,7 +30,6 @@ func HandlerMe(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(notes)
-
 }
 
 func GetPublicNoteHandler(w http.ResponseWriter, r *http.Request) {
@@ -38,13 +37,13 @@ func GetPublicNoteHandler(w http.ResponseWriter, r *http.Request) {
 	noteID, err := strconv.Atoi(idStr)
 
 	if err != nil {
-		http.Error(w, "Некорректный ID", http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	note, err := db.GetPublicNote(noteID)
 	if err != nil {
-		http.Error(w, "Заметка не найдена или не публичная", http.StatusBadRequest)
+		http.Error(w, "Note not found or not public", http.StatusBadRequest)
 		return
 	}
 
@@ -53,23 +52,23 @@ func GetPublicNoteHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetNoteByIDAndUserHandler(w http.ResponseWriter, r *http.Request) {
-	userIDRAW := r.Context().Value("user_id")
-	userID, ok := userIDRAW.(int)
+	userIDRaw := r.Context().Value("user_id")
+	userID, ok := userIDRaw.(int)
 	if !ok {
-		http.Error(w, "user_id не найден", http.StatusUnauthorized)
+		http.Error(w, "user_id not found", http.StatusUnauthorized)
 		return
 	}
 
 	idStr := chi.URLParam(r, "id")
 	noteID, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Некорректный ID заметки", http.StatusBadRequest)
+		http.Error(w, "Invalid note ID", http.StatusBadRequest)
 		return
 	}
 
 	note, err := db.GetNoteByIDAndUser(noteID, userID)
 	if err != nil {
-		http.Error(w, "Не удалось получить заметку", http.StatusBadRequest)
+		http.Error(w, "Failed to get note", http.StatusBadRequest)
 		return
 	}
 
@@ -78,21 +77,21 @@ func GetNoteByIDAndUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func CheckPrivateNoteHandler(w http.ResponseWriter, r *http.Request) {
-	noteIDRAW := chi.URLParam(r, "id")
-	noteID, err := strconv.Atoi(noteIDRAW)
+	noteIDRaw := chi.URLParam(r, "id")
+	noteID, err := strconv.Atoi(noteIDRaw)
 	if err != nil {
-		http.Error(w, "Некорректный ID", http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	note, err := db.GetNoteByID(noteID)
 	if err != nil {
-		http.Error(w, "Заметка не найдена", http.StatusNotFound)
+		http.Error(w, "Note not found", http.StatusNotFound)
 		return
 	}
 
 	if !note.IsPrivate {
-		http.Error(w, "Заметка не является приватной", http.StatusBadRequest)
+		http.Error(w, "Note is not private", http.StatusBadRequest)
 		return
 	}
 
@@ -103,13 +102,13 @@ func CheckNoteHandler(w http.ResponseWriter, r *http.Request) {
 	noteIDStr := chi.URLParam(r, "id")
 	noteID, err := strconv.Atoi(noteIDStr)
 	if err != nil {
-		http.Error(w, "Некорректный ID", http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	note, err := db.GetNoteByID(noteID)
 	if err != nil {
-		http.Error(w, "Заметка не найдена", http.StatusNotFound)
+		http.Error(w, "Note not found", http.StatusNotFound)
 		return
 	}
 

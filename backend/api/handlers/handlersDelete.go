@@ -13,19 +13,19 @@ func DeleteNoteHandler(w http.ResponseWriter, r *http.Request) {
 	userRAWID := r.Context().Value("user_id")
 	userID, ok := userRAWID.(int)
 	if !ok {
-		http.Error(w, "user_id не найден", http.StatusUnauthorized)
+		http.Error(w, "user_id not found", http.StatusUnauthorized)
 		return
 	}
 
 	strNoteID := chi.URLParam(r, "id")
 	noteID, err := strconv.Atoi(strNoteID)
 	if err != nil {
-		http.Error(w, "Хз какую ошибку вернуть посоветуй", http.StatusUnauthorized)
+		http.Error(w, "invalid note id", http.StatusBadRequest)
 		return
 	}
 
 	if err := db.DeleteNote(noteID, userID); err != nil {
-		http.Error(w, "Не удалось удалить заметку", http.StatusBadRequest)
+		http.Error(w, "failed to delete note", http.StatusBadRequest)
 		return
 	}
 
