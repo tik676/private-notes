@@ -72,8 +72,8 @@
 _Чтобы добавить скриншоты интерфейса, просто помести их в папку проекта (например, `screenshots/`) и вставь так:_
 
 ```
-![Главная страница](./screenshots/dashboard.png)
-![Форма создания заметки](./screenshots/Create_note.png)
+[Главная страница](./screenshots/dashboard.png)
+[Форма создания заметки](./screenshots/Create_note.png)
 ```
 
 
