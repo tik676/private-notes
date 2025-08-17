@@ -83,7 +83,6 @@ export default function Dashboard() {
                 className="bg-[var(--card-bg)] text-[var(--text-color)] rounded-xl shadow-md p-5 flex flex-col justify-between"
               >
                 <div>
-                  {/* Тип и ID */}
                   <div className="flex justify-between items-center mb-2 text-sm text-gray-500">
                     <span>
                       🔒 {note.is_private ? "Приватная" : "Публичная"}
@@ -99,7 +98,6 @@ export default function Dashboard() {
                     </span>
                   </div>
 
-                  {/* Контент или кнопка разблокировки */}
                   {note.is_private ? (
                     <button
                       onClick={() =>
@@ -115,13 +113,11 @@ export default function Dashboard() {
                     </p>
                   )}
 
-                  {/* Срок действия */}
                   <p className="text-xs text-gray-500">
                     ⏳ Срок: {new Date(note.expires_at).toLocaleString("ru-RU")}
                   </p>
                 </div>
 
-                {/* Кнопки действия */}
                 <div className="flex gap-2 mt-4">
                   <button
                     onClick={() =>

@@ -1,4 +1,3 @@
-// src/pages/Register.tsx
 import { useNavigate } from "react-router-dom";
 import RegisterForm from "../components/RegisterForm";
 import { useTheme } from "../hooks/useTheme";
@@ -9,14 +8,12 @@ export default function Register() {
 
   return (
     <div className="relative flex items-center justify-center min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] transition-colors px-4 overflow-hidden">
-       {/* 🔵 Анимация фона */}
       <div
         className={`pointer-events-none absolute top-0 left-1/2 transform -translate-x-1/2 w-[500px] h-[500px] rounded-full blur-[120px] opacity-30 z-0 ${
           theme === "dark" ? "bg-purple-500" : "bg-blue-300"
         }`}
       />
 
-      {/* ⬅ Кнопка назад */}
       <div className="absolute top-4 left-4 z-10">
         <button
           onClick={() => navigate("/")}
@@ -26,7 +23,6 @@ export default function Register() {
         </button>
       </div>
 
-      {/* 🌓 Сменить тему */}
       <div className="absolute top-4 right-4 z-10">
         <button
           onClick={toggleTheme}

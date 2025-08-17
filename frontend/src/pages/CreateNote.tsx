@@ -24,9 +24,9 @@ export default function CreateNote() {
     try {
       await api.post("/notes", {
         content,
-        expires_at: new Date(expiresAt).toISOString(), // ✅ snake_case!
-        is_private: isPrivate, // ✅ snake_case!
-        password: isPrivate ? password : undefined, // ✅ пароль только если приватная
+        expires_at: new Date(expiresAt).toISOString(),
+        is_private: isPrivate, 
+        password: isPrivate ? password : undefined, 
       });
 
       navigate("/dashboard");
@@ -37,7 +37,6 @@ export default function CreateNote() {
 
   return (
     <div className="relative flex items-center justify-center min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] transition-colors px-4 overflow-hidden">
-      {/* Анимированный фон */}
       <div
         className={`pointer-events-none absolute top-0 left-1/2 transform -translate-x-1/2 w-[600px] h-[600px] rounded-full blur-[140px] opacity-20 z-0 ${
           theme === "dark" ? "bg-purple-700" : "bg-blue-300"

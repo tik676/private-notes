@@ -1,6 +1,5 @@
-// src/main.tsx
-import './index.css'; // 💥 tailwind
-import './App.css';   // 💥 твои кастомные переменные
+import './index.css'; 
+import './App.css'; 
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';

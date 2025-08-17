@@ -8,7 +8,6 @@ export default function Welcome() {
 
   return (
     <div className="relative min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] transition-colors overflow-hidden flex items-center justify-center px-4">
-      {/* 🔵 Анимированные линии на фоне */}
       <div
         className="animated-lines"
         style={{
@@ -16,7 +15,7 @@ export default function Welcome() {
         } as React.CSSProperties}
       />
 
-      {/* 🔘 Кнопка смены темы */}
+
       <div className="absolute top-4 right-4 z-10">
         <motion.button
           whileTap={{ scale: 0.95 }}
@@ -27,7 +26,6 @@ export default function Welcome() {
         </motion.button>
       </div>
 
-      {/* 💬 Контент Welcome */}
       <motion.div
         className="relative z-10 max-w-5xl w-full flex flex-col items-center gap-10"
         initial={{ opacity: 0, y: 30 }}
